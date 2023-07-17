@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/RohithER12/product-svc/pkg/db"
@@ -20,6 +21,12 @@ func (s *Server) CreateProduct(ctx context.Context, req *pb.CreateProductRequest
 	product.Name = req.Name
 	product.Stock = req.Stock
 	product.Price = req.Price
+
+	fmt.Println(
+		"\nName\n", product.Name, "\n", req.Name,
+		"\nstock\n", product.Stock, "\n", req.Stock,
+		"\nPrice\n", product.Price, "\n", req.Price,
+	)
 
 	if result := s.H.DB.Create(&product); result.Error != nil {
 		return &pb.CreateProductResponse{
@@ -59,6 +66,11 @@ func (s *Server) FindOne(ctx context.Context, req *pb.FindOneRequest) (*pb.FindO
 
 func (s *Server) DecreaseStock(ctx context.Context, req *pb.DecreaseStockRequest) (*pb.DecreaseStockResponse, error) {
 	var product models.Product
+	fmt.Println(
+		product.Stock, "\n",
+		product.StockDecreaseLogs, "\n",
+		product.StockDecreaseLogs.ProductRefer,
+	)
 
 	if result := s.H.DB.First(&product, req.Id); result.Error != nil {
 		return &pb.DecreaseStockResponse{

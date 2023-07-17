@@ -1,4 +1,4 @@
 proto:
-	protoc pkg/pb/*.proto --go-grpc_out=.
+	protoc --go_out=. --go-grpc_out=. pkg/pb/product.proto
 server:
 	go run cmd/main.go
