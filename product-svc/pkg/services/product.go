@@ -82,7 +82,7 @@ func (s *Server) DecreaseStock(ctx context.Context, req *pb.DecreaseStockRequest
 	if product.Stock <= 0 {
 		return &pb.DecreaseStockResponse{
 			Status: http.StatusConflict,
-			Error:  "Stock too low",
+			Error:  "out of stock",
 		}, nil
 	}
 
@@ -107,6 +107,31 @@ func (s *Server) DecreaseStock(ctx context.Context, req *pb.DecreaseStockRequest
 	return &pb.DecreaseStockResponse{
 		Status: http.StatusOK,
 	}, nil
+}
+
+func (s *Server) ListProducts(ctx context.Context, req *pb.ListProductsRequest) (*pb.ListProductsResponse, error) {
+	var products []models.Product
+
+	result := s.H.DB.Find(&products)
+	if result.Error != nil {
+		return &pb.ListProductsResponse{
+			Status: http.StatusNotFound,
+			Error:  result.Error.Error(),
+		}, nil
+	}
+
+	var response pb.ListProductsResponse
+	for _, product := range products {
+		data := &pb.FindOneData{
+			Id:    product.Id,
+			Name:  product.Name,
+			Stock: product.Stock,
+			Price: product.Price,
+		}
+		response.Data = append(response.Data, data)
+	}
+
+	return &response, nil
 }
 
 // func (s *Server) mustEmbedUnimplementedProductServiceServer() {
