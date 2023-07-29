@@ -1,0 +1,136 @@
+version: '3.8'
+
+services:
+  db-prod:
+    container_name: db-prod
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=rohith
+      - POSTGRES_PASSWORD=892328
+      - POSTGRES_DB=product_svc
+    networks:
+      - my-network
+    ports:
+      - 5439:5432
+    volumes:
+      - product-db:/var/lib/postgresql/data
+
+  db-cart:
+    container_name: db-cart
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=rohith
+      - POSTGRES_PASSWORD=892328
+      - POSTGRES_DB=cart_svc
+    networks:
+      - my-network
+    ports:
+      - 5438:5432
+    volumes:
+      - cart-db:/var/lib/postgresql/data
+
+  db-auth:
+    container_name: db-auth
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=rohith
+      - POSTGRES_PASSWORD=892328
+      - POSTGRES_DB=auth_svc
+    networks:
+      - my-network
+    ports:
+      - 5437:5432
+    volumes:
+      - auth-db:/var/lib/postgresql/data
+
+  db-order:
+    container_name: db-order
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=rohith
+      - POSTGRES_PASSWORD=892328
+      - POSTGRES_DB=order_svc
+    networks:
+      - my-network
+    ports:
+      - 5436:5432
+    volumes:
+      - order-db:/var/lib/postgresql/data
+
+  product_service:
+    container_name: product_service
+    image: productservice:0.2
+    env_file:
+      - ./product-svc/pkg/config/envs/dev.env
+    networks:
+      - my-network
+    ports:
+      - 5435:4000
+    depends_on:
+      - db-prod
+
+  cart_service:
+    container_name: cart_service
+    image: cartservice:0.2
+    env_file:
+      - ./cart-svc/pkg/config/envs/dev.env
+    networks:
+      - my-network
+    ports:
+      - 5434:4000
+    depends_on:
+      - db-cart
+      - product_service
+
+  auth_service:
+    container_name: auth_service
+    image: authservice:0.3
+    env_file:
+      - ./auth-svc/pkg/config/envs/dev.env
+    networks:
+      - my-network
+    ports:
+      - 5443:4000
+    depends_on:
+      - db-auth
+      - cart_service
+
+  order_service:
+    container_name: order_service
+    image: orderservice:0.2
+    env_file:
+      - ./order-svc/pkg/config/envs/dev.env
+    networks:
+      - my-network
+    ports:
+      - 5431:4000
+    depends_on:
+      - db-order
+      - cart_service
+      - product_service
+      - auth_service
+
+  api_gateway:
+    container_name: api_gateway
+    image: api-gateway:0.3
+    env_file:
+      - ./api-gateway/pkg/config/envs/dev.env
+    networks:
+      - my-network
+    ports:
+      - 5430:4000
+    depends_on:
+      - auth_service
+      - product_service
+      - cart_service
+      - order_service
+
+volumes:
+  auth-db:
+  product-db:
+  cart-db:
+  order-db:
+
+networks:
+  my-network:
+    driver: bridge

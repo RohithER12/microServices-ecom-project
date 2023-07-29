@@ -8,28 +8,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RegisterRequestBody struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+type ResetPasswrdRequestBody struct {
 	MobileNo string `json:"phone_number"`
 }
 
-type RegisterValidateRequestBody struct {
-	Key string `json:"key"`
-	Otp string `json:"otp"`
+type ResetPasswordValidationRequestBody struct {
+	Key      string `json:"key"`
+	Otp      string `json:"otp"`
+	Password string `json:"password"`
 }
 
-func Register(ctx *gin.Context, c pb.AuthServiceClient) {
-	body := RegisterRequestBody{}
+func ResetPasswrd(ctx *gin.Context, c pb.AuthServiceClient) {
+	body := ResetPasswrdRequestBody{}
 
 	if err := ctx.BindJSON(&body); err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	res, err := c.Register(context.Background(), &pb.RegisterRequest{
-		Email:       body.Email,
-		Password:    body.Password,
+	res, err := c.ResetPassword(context.Background(), &pb.ResetPasswordRequest{
+
 		PhoneNumber: body.MobileNo,
 	})
 
@@ -41,17 +39,18 @@ func Register(ctx *gin.Context, c pb.AuthServiceClient) {
 	ctx.JSON(int(res.Status), &res)
 }
 
-func RegisterOTPValidation(ctx *gin.Context, c pb.AuthServiceClient) {
-	body := RegisterValidateRequestBody{}
+func ResetPasswordValidation(ctx *gin.Context, c pb.AuthServiceClient) {
+	body := ResetPasswordValidationRequestBody{}
 
 	if err := ctx.BindJSON(&body); err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	res, err := c.RegisterOTPValidation(context.Background(), &pb.RegisterOTPValidationRequest{
-		Key: body.Key,
-		Otp: body.Otp,
+	res, err := c.ResetPasswordValidation(context.Background(), &pb.ResetPasswordValidationRequest{
+		Key:      body.Key,
+		Otp:      body.Otp,
+		Password: body.Password,
 	})
 
 	if err != nil {
